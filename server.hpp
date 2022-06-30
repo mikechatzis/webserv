@@ -16,51 +16,29 @@
 char* parse(char line[], const char symbol[])
 {
     char *copy = strdup(line);
-    
     char* message = NULL;
     char* token = strtok(copy, symbol);
-    int current = 0;
-
-    while( token != NULL ) {
-      
-      token = strtok(NULL, " ");
-      if(current == 0){
-          message = token;
-          if(message == NULL){
-              message = NULL;
-          }
-          return message;
-      }
-      current = current + 1;
-   }
-//    free(token);
-//    free(copy);
-   return message;
+	token = strtok(NULL, " ");
+	if (token == NULL)
+	{
+		delete[] copy;
+		return (message);
+	}
+	message = strdup(token);
+	delete[] copy;
+	return message;
 }
 
 char* parse_method(char line[], const char symbol[])
 {
     char *copy = strdup(line);
-        
     char *message = NULL;
     char * token = strtok(copy, symbol);
-    int current = 0;
-
-    while( token != NULL ) {
       
-      //token = strtok(NULL, " ");
-      if(current == 0){
-          message = token;
-          if(message == NULL){
-              message = NULL;
-          }
-          return message;
-      }
-      current = current + 1;
-   }
-   free(copy);
-   free(token);
-   return message;
+	//token = strtok(NULL, " ");
+	message = strdup(token);
+	delete[] copy;
+	return message;
 }
 
 // char* find_token(char line[], const char symbol[], const char match[])

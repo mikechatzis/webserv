@@ -87,10 +87,10 @@ int main(void)
 	struct sockaddr_storage remoteaddr; // client address
 	socklen_t addrlen;
 
-	char buff[256]; // buffer for client data
+	char buff[1024]; // buffer for client data
 	int nBytes;
 
-	char http_header[] = "HTTP/1.1 200 Ok\r\n";
+	char http_header[] = "HTTP/1.1 200 OK\r\n";
 
 	// char remoteIP[INET6_ADDRSTRLEN];
 	int yes = 1; // for setsockopt() SO_REUSEADDR
@@ -187,7 +187,8 @@ int main(void)
 				else
 				{
 					// handle data from a client
-					nBytes = recv(i, buff, sizeof(buff), 0);
+					nBytes = recv(i, buff, sizeof(buff) - 1, 0);
+					buff[nBytes] = 0;
 					if (nBytes <= 0)
 					{
 						// either error or connection closed by client
@@ -205,39 +206,59 @@ int main(void)
 						char *parse_string_method = parse_method(buff, " ");
 						std::cout << "Client method: " << parse_string_method << std::endl;
 						char *parse_string = parse(buff, " ");
-						if(!parse_string){
-							continue;
+						if(!parse_string)
+						{
+							delete[] parse_string_method;
+							delete[] parse_string;
+							continue ;
 						}
 						std::cout << "Client path request: " << parse_string << std::endl;
 						char *copy = strdup(parse_string);
 						if (!strcmp(copy, "/"))
 						{
-							free(copy);
+							delete[] copy;
 							copy = strdup("index.html");
 						}
 						char *parse_ext = parse(copy, ".");
-						if(!parse_ext){
-							continue;
+						if(!parse_ext)
+						{
+							delete[] copy;
+							delete[] parse_string_method;
+							delete[] parse_string;
+							delete[] parse_ext;
+							continue ;
 						}
 						std::cout << "extention: " << parse_ext << std::endl;
-						char *copy_head = strdup(http_header);
 
-						if(!strcmp(parse_string_method, "GET"))
+						if (!strcmp(parse_string_method, "GET"))
 						{
 							std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
 							if (it != types.end())
 							{
-								char path_head[500] = ".";
-								strcat(path_head, parse_string);
-								strcat(copy_head, it->second.c_str());
-								send(i, copy_head, strlen(copy_head), 0);
+								// NOT SURE WHY BUT MAYBE WE'LL NEED IT
+								// std::string path_head = ".";
+								// path_head += parse_string;
+								std::string copy_head = http_header;
+								copy_head += it->second;
+								send(i, copy_head.c_str(), copy_head.length(), 0);
 							}
 						}
-						else{
+						else if (!strcmp(parse_string_method, "POST"))
+						{
 							send(i, "POST OR SMT ELSE", 17, 0);
 						}
-						free(copy);
-						free(copy_head);
+						else if (!strcmp(parse_string_method, "DELETE"))
+						{
+							//something
+						}
+						else
+						{
+							std::cerr << "uno momento de bruh" << std::endl;
+						}
+						delete[] copy;
+						delete[] parse_string_method;
+						delete[] parse_string;
+						delete[] parse_ext;
 					}
 				}
 			}
