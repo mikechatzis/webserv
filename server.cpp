@@ -91,7 +91,6 @@ int main(void)
 	int nBytes;
 
 	char http_header[] = "HTTP/1.1 200 Ok\r\n";
-	char* slash = NULL;
 
 	// char remoteIP[INET6_ADDRSTRLEN];
 	int yes = 1; // for setsockopt() SO_REUSEADDR
@@ -211,6 +210,11 @@ int main(void)
 						}
 						std::cout << "Client path request: " << parse_string << std::endl;
 						char *copy = strdup(parse_string);
+						if (!strcmp(copy, "/"))
+						{
+							free(copy);
+							copy = strdup("index.html");
+						}
 						char *parse_ext = parse(copy, ".");
 						if(!parse_ext){
 							continue;
@@ -218,18 +222,15 @@ int main(void)
 						std::cout << "extention: " << parse_ext << std::endl;
 						char *copy_head = strdup(http_header);
 
-						if(!strcmp(parse_string_method, "GET")){
-							if(slash){
-								send(i, slash, strlen(slash), 0);
-							}
-							else{
-								std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
-								if (it != types.end()){
-									char path_head[500] = ".";
-									strcat(path_head, parse_string);
-									strcat(copy_head, it->second.c_str());
-									send(i, copy_head, strlen(copy_head), 0);
-								}
+						if(!strcmp(parse_string_method, "GET"))
+						{
+							std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
+							if (it != types.end())
+							{
+								char path_head[500] = ".";
+								strcat(path_head, parse_string);
+								strcat(copy_head, it->second.c_str());
+								send(i, copy_head, strlen(copy_head), 0);
 							}
 						}
 						else{
