@@ -1,5 +1,4 @@
 #include "server.hpp"
-#include "utils.cpp"
 
 // get sockaddr
 void *get_in_addr(struct sockaddr *sa)
@@ -23,7 +22,7 @@ int main(void)
 	char buff[1024]; // buffer for client data
 	int nBytes;
 
-	char http_header[] = "HTTP/1.1 200 OK\r\n";
+	char http_header[] = "HTTP/1.1 ";
 
 	// char remoteIP[INET6_ADDRSTRLEN];
 	int yes = 1; // for setsockopt() SO_REUSEADDR
@@ -136,6 +135,7 @@ int main(void)
 					else
 					{
 						std::map<std::string, std::string> types = initialize_mime_types();
+						std::map<std::string, std::string> http_code = http_table();
 						char *parse_string_method = parse_method(buff, " ");
 						std::cout << "Client method: " << parse_string_method << std::endl;
 						char *parse_string = parse(buff, " ");
@@ -163,30 +163,70 @@ int main(void)
 						}
 						std::cout << "extention: " << parse_ext << std::endl;
 
-						if (!strcmp(parse_string_method, "GET"))
-						{
+						if (!strcmp(parse_string_method, "GET")){
 							std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
-							if (it != types.end())
-							{
-								// NOT SURE WHY BUT MAYBE WE'LL NEED IT
-								// std::string path_head = ".";
-								// path_head += parse_string;
+							if (it != types.end()){
+
 								std::string copy_head = http_header;
-								copy_head += it->second;
+								std::string str = parse_string + 1;
+								std::fstream test(str);
+
+								if(test)
+									copy_head += handle_valid_get(test, parse_string, http_code, it->second);
+								else
+									copy_head += handle_invalid_get("404", http_code);
 								send(i, copy_head.c_str(), copy_head.length(), 0);
+							}
+							else{
+								std::string head = http_header;
+								head += handle_invalid_get("415", http_code);
+								send(i, head.c_str(), head.length(), 0);
 							}
 						}
 						else if (!strcmp(parse_string_method, "POST"))
 						{
-							send(i, "POST OR SMT ELSE", 17, 0);
+							// std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
+							// if (it != types.end()){
+
+							// 	std::string copy_head = http_header;
+							// 	std::string str = parse_string + 1;
+							// 	std::ofstream test(str);
+
+							// 	if(test)
+							// 		copy_head += handle_valid_post(test, parse_string, http_code, it->second);
+							// 	else
+							// 		copy_head += handle_invalid_post("404", http_code);
+							// 	send(i, copy_head.c_str(), copy_head.length(), 0);
+							// }
+							// else{
+							// 	std::string head = http_header;
+							// 	head += handle_invalid_post("415", http_code);
+							// 	send(i, head.c_str(), head.length(), 0);
+							// }
 						}
 						else if (!strcmp(parse_string_method, "DELETE"))
 						{
-							//something
+							std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
+							if (it != types.end()){
+								std::string copy_head = http_header;
+								copy_head += "200 ";
+								copy_head += http_code["200"];
+								copy_head += it->second;
+								send(i, copy_head.c_str(), copy_head.length(), 0);
+							}
+							else{
+								std::string head = http_header;
+								head += "415 ";
+								head += http_code["415"];
+								send(i, head.c_str(), head.length(), 0);
+							}
 						}
 						else
 						{
-							std::cerr << "uno momento de bruh" << std::endl;
+							std::string head = http_header;
+							head += "400 ";
+							head += http_code["400"];
+							send(i, head.c_str(), head.length(), 0);
 						}
 						delete[] copy;
 						delete[] parse_string_method;

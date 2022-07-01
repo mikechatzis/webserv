@@ -10,11 +10,17 @@
 #include <netdb.h> // For addrinfo
 #include <arpa/inet.h> // For inet_ntop
 #include <map>
+#include <fstream>
+#include <sstream>
 
 #define PORT "4242"
 
 char* parse_method(char line[], const char symbol[]);
 char* parse(char line[], const char symbol[]);
 std::map<std::string, std::string> initialize_mime_types(void);
+std::map<std::string, std::string> http_table(void);
+std::string generate_html(const std::string &key);
+std::string handle_valid_get(std::fstream &test, char *ptr, std::map<std::string, std::string> &map, std::string type);
+std::string handle_invalid_get(const std::string &err_cd, std::map<std::string, std::string> &map);
 
 #endif
