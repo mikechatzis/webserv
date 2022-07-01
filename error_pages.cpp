@@ -13,13 +13,3 @@ const std::string generate_html(const std::string &key)
 	std::cout << ss.str() << std::endl;
 	return (ss.str());
 }
-
-int main()
-{
-	generate_html("400");
-	generate_html("401");
-	generate_html("402");
-	generate_html("403");
-	generate_html("404");
-	generate_html("418");
-}
