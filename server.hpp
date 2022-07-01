@@ -12,6 +12,8 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <stdio.h>
+
 
 #define PORT "4242"
 
@@ -20,7 +22,10 @@ char* parse(char line[], const char symbol[]);
 std::map<std::string, std::string> initialize_mime_types(void);
 std::map<std::string, std::string> http_table(void);
 std::string generate_html(const std::string &key);
-std::string handle_valid_get(std::fstream &test, char *ptr, std::map<std::string, std::string> &map, std::string type);
-std::string handle_invalid_get(const std::string &err_cd, std::map<std::string, std::string> &map);
+std::string delete_response( void );
+std::string valid_get(std::fstream &test, std::map<std::string, std::string> &map, std::string type);
+std::string invalid_get(const std::string &err_cd, std::map<std::string, std::string> &map);
+std::string valid_delete(std::FILE *file, std::string type, std::map<std::string, std::string> &map);
+std::string invalid_delete(const std::string &err_cd, std::map<std::string, std::string> &map);
 
 #endif
