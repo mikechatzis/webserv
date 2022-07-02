@@ -157,29 +157,34 @@ int main(void)
 							}
 						}
 						else if (!strcmp(parse_string_method, "POST")){
-							// std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
-							// if (it != types.end()){
+							std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
+							if (it != types.end()){
 
-							// 	std::string str = parse_string + 1;
-							// 	std::fstream test(str);
-							// 	if(!test)
-							// 		response += valid_post(test, it->second, http_code);
-							// 	else
-							// 		response += invalid_post("204", http_code);
-							// 	send(i, response.c_str(), response.length(), 0);
-							// }
-							// else{
-							// 	response += invalid_post("415", http_code);
-							// 	send(i, response.c_str(), response.length(), 0);
-							// }
+								std::string str = parse_string + 1;
+								std::cout << str << std::endl;
+								std::FILE *file = fopen(str.c_str(), "r");
+								if(!file)
+									response += valid_post(str, it->second, http_code);
+								else{
+									fclose(file);
+									response += invalid_post("422", http_code);
+								}
+								send(i, response.c_str(), response.length(), 0);
+							}
+							else{
+								response += invalid_post("415", http_code);
+								send(i, response.c_str(), response.length(), 0);
+							}
 						}
 						else if (!strcmp(parse_string_method, "DELETE")){
 							std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
 							if (it != types.end()){
 
 								std::string str = parse_string + 1;
-								if(std::FILE *file = fopen(str.c_str(), "r"))
-									response += valid_delete(file, it->second, http_code);
+								if(std::FILE *file = fopen(str.c_str(), "r")){
+									fclose(file);
+									response += valid_delete(str, it->second, http_code);
+								}
 								else
 									response += invalid_delete("204", http_code);
 								send(i, response.c_str(), response.length(), 0);
@@ -191,15 +196,14 @@ int main(void)
 						}
 						else
 						{
-							response += "400 ";
-							response += http_code["400"];
+							response += "405 ";
+							response += http_code["405"];
 							send(i, response.c_str(), response.length(), 0);
 						}
 						delete[] copy;
 						delete[] parse_string_method;
 						delete[] parse_string;
 						delete[] parse_ext;
-						exit(0);
 					}
 				}
 			}

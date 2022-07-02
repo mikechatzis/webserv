@@ -23,9 +23,12 @@ std::map<std::string, std::string> initialize_mime_types(void);
 std::map<std::string, std::string> http_table(void);
 std::string generate_html(const std::string &key);
 std::string delete_response( void );
+
 std::string valid_get(std::fstream &test, std::map<std::string, std::string> &map, std::string type);
 std::string invalid_get(const std::string &err_cd, std::map<std::string, std::string> &map);
-std::string valid_delete(std::FILE *file, std::string type, std::map<std::string, std::string> &map);
+std::string valid_delete(std::string file_name, std::string type, std::map<std::string, std::string> &map);
 std::string invalid_delete(const std::string &err_cd, std::map<std::string, std::string> &map);
+std::string valid_post(std::string file_name, std::string type, std::map<std::string, std::string> &map);
+std::string invalid_post(std::string err_cd, std::map<std::string, std::string> &map);
 
 #endif
