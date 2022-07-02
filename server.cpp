@@ -90,7 +90,7 @@ int main(void)
 
 					nBytes = recv(i, buff, sizeof(buff) - 1, 0);
 					buff[nBytes] = 0;
-					std::cout << buff << std::endl;
+					// std::cout << buff << std::endl;
 					if (nBytes <= 0){
 
 						if (nBytes == 0)
@@ -106,9 +106,19 @@ int main(void)
 						char *parse_string_method = parse_method(buff, " ");
 						char *parse_string = parse(buff, " ");
 						if(!parse_string){
+							std::string response = http_header;
+							response += invalid_get("400", http_code);
+							send(i, response.c_str(), response.length(), 0);
 							delete[] parse_string_method;
 							delete[] parse_string;
 							continue ;
+						}
+						else if (!strcmp(parse_string_method, "TEAPOT"))
+						{
+							delete[] parse_string_method;
+							parse_string_method = strdup("GET");
+							delete[] parse_string;
+							parse_string = strdup("/teapot.html");
 						}
 						char *copy = strdup(parse_string);
 						if (!strcmp(copy, "/") && !strcmp(parse_string_method, "GET")){
@@ -119,6 +129,11 @@ int main(void)
 						}
 						char *parse_ext = parse(copy, ".");
 						if(!parse_ext){
+							std::string response = http_header;
+							response += invalid_get("415", http_code);
+							int num = send(i, response.c_str(), response.length(), 0);
+							if (num < 0)
+								perror("send");
 							delete[] copy;
 							delete[] parse_string_method;
 							delete[] parse_string;
