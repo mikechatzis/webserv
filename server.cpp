@@ -161,7 +161,6 @@ int main(void)
 							if (it != types.end()){
 
 								std::string str = parse_string + 1;
-								std::cout << str << std::endl;
 								std::FILE *file = fopen(str.c_str(), "r");
 								if(!file)
 									response += valid_post(str, it->second, http_code);
