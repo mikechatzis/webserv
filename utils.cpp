@@ -174,3 +174,20 @@ char* parse_method(char line[], const char symbol[])
 	delete[] copy;
 	return message;
 }
+
+char* parse_version(char line[], const char symbol[])
+{
+	char *copy = strdup(line);
+	char* message = NULL;
+	char* token = strtok(copy, symbol);
+	token = strtok(NULL, " ");
+	token = strtok(NULL, " ");
+	if (token == NULL)
+	{
+		delete[] copy;
+		return (message);
+	}
+	message = strdup(token);
+	delete[] copy;
+	return message;
+}

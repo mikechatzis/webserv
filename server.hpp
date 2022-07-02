@@ -21,6 +21,7 @@
 void *get_in_addr(struct sockaddr *sa);
 char* parse_method(char line[], const char symbol[]);
 char* parse(char line[], const char symbol[]);
+char* parse_version(char line[], const char symbol[]);
 std::map<std::string, std::string> initialize_mime_types(void);
 std::map<std::string, std::string> http_table(void);
 

@@ -109,6 +109,13 @@ int main(void)
 							delete[] parse_string;
 							continue ;
 						}
+						char *http_version = parse_version(buff, " ");
+						if(strlen(http_version) != 9 && strncmp(http_version, "HTTP/1.1", 9)){
+							delete[] parse_string_method;
+							delete[] parse_string;
+							delete[] http_version;
+							continue ;
+						}
 						char *copy = strdup(parse_string);
 						if (!strcmp(copy, "/")){
 
@@ -143,13 +150,13 @@ int main(void)
 								send(i, response.c_str(), response.length(), 0);
 							}
 							else{
-								response += invalid_get("415", http_code);
+								response += invalid_get("400", http_code);
 								send(i, response.c_str(), response.length(), 0);
 							}
 						}
 						else if (!strcmp(parse_string_method, "POST")){
 							std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
-							if (it != types.end()){
+							if (it != types.end() && strcmp(parse_string, "/")){
 
 								std::string str = parse_string + 1;
 								std::FILE *file = fopen(str.c_str(), "r");
@@ -162,7 +169,7 @@ int main(void)
 								send(i, response.c_str(), response.length(), 0);
 							}
 							else{
-								response += invalid_post("415", http_code);
+								response += invalid_post("400", http_code);
 								send(i, response.c_str(), response.length(), 0);
 							}
 						}
@@ -180,7 +187,7 @@ int main(void)
 								send(i, response.c_str(), response.length(), 0);
 							}
 							else{
-								response += invalid_delete("415", http_code);
+								response += invalid_delete("400", http_code);
 								send(i, response.c_str(), response.length(), 0);
 							}
 						}
