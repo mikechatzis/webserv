@@ -11,7 +11,6 @@ std::string generate_html(const std::string &key)
 	ss << "<img style=\"margin-left: auto;\", src=\"https://http.cat/";
 	ss << key;
 	ss << "\">\r\n</body>\r\n</html>\r\n";
-	std::cout << ss.str() << std::endl;
 	return (ss.str());
 }
 

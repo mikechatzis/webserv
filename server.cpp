@@ -12,7 +12,7 @@ int main(void)
 	struct sockaddr_storage remoteaddr;
 	socklen_t addrlen;
 
-	char buff[1024];
+	char buff[8192];
 	int nBytes;
 
 	char http_header[] = "HTTP/1.1 ";
@@ -90,6 +90,7 @@ int main(void)
 
 					nBytes = recv(i, buff, sizeof(buff) - 1, 0);
 					buff[nBytes] = 0;
+					std::cout << buff << std::endl;
 					if (nBytes <= 0){
 
 						if (nBytes == 0)
@@ -110,10 +111,11 @@ int main(void)
 							continue ;
 						}
 						char *copy = strdup(parse_string);
-						if (!strcmp(copy, "/")){
-
+						if (!strcmp(copy, "/") && !strcmp(parse_string_method, "GET")){
 							delete[] copy;
-							copy = strdup("index.html");
+							delete[] parse_string;
+							copy = strdup("/index.html");
+							parse_string = strdup("/index.html");
 						}
 						char *parse_ext = parse(copy, ".");
 						if(!parse_ext){
@@ -124,8 +126,8 @@ int main(void)
 							continue ;
 						}
 
-						// std::cout << "Client method: " << parse_string_method << std::endl;
-						// std::cout << "Client path request: " << parse_string << std::endl;
+						std::cout << "Client method: " << parse_string_method << std::endl;
+						std::cout << "Client path request: " << parse_string << std::endl;
 						// std::cout << "extention: " << parse_ext << std::endl;
 
 						std::string response = http_header;
@@ -153,6 +155,7 @@ int main(void)
 
 								std::string str = parse_string + 1;
 								std::FILE *file = fopen(str.c_str(), "r");
+
 								if(!file)
 									response += valid_post(str, it->second, http_code);
 								else{
