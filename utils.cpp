@@ -141,6 +141,13 @@ std::map<std::string, std::string> http_table(void)
 	return http;
 }
 
+void *get_in_addr(struct sockaddr *sa)
+{
+	if (sa->sa_family == AF_INET)
+		return (&(reinterpret_cast<struct sockaddr_in *>(sa)->sin_addr));
+	return (&(reinterpret_cast<struct sockaddr_in6 *>(sa)->sin6_addr));
+}
+
 char* parse(char line[], const char symbol[])
 {
 	char *copy = strdup(line);

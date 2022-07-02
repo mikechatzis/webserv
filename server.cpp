@@ -1,13 +1,5 @@
 #include "server.hpp"
 
-// get sockaddr
-void *get_in_addr(struct sockaddr *sa)
-{
-	if (sa->sa_family == AF_INET)
-		return (&(reinterpret_cast<struct sockaddr_in *>(sa)->sin_addr));
-	return (&(reinterpret_cast<struct sockaddr_in6 *>(sa)->sin6_addr));
-}
-
 int main(void)
 {
 	fd_set master;
@@ -113,7 +105,6 @@ int main(void)
 						char *parse_string_method = parse_method(buff, " ");
 						char *parse_string = parse(buff, " ");
 						if(!parse_string){
-
 							delete[] parse_string_method;
 							delete[] parse_string;
 							continue ;
@@ -126,13 +117,13 @@ int main(void)
 						}
 						char *parse_ext = parse(copy, ".");
 						if(!parse_ext){
-
 							delete[] copy;
 							delete[] parse_string_method;
 							delete[] parse_string;
 							delete[] parse_ext;
 							continue ;
 						}
+
 						// std::cout << "Client method: " << parse_string_method << std::endl;
 						// std::cout << "Client path request: " << parse_string << std::endl;
 						// std::cout << "extention: " << parse_ext << std::endl;
