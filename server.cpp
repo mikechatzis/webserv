@@ -12,7 +12,7 @@ int main(void)
 	struct sockaddr_storage remoteaddr;
 	socklen_t addrlen;
 
-	char buff[1024];
+	char buff[8024];
 	int nBytes;
 
 	char http_header[] = "HTTP/1.1 ";
@@ -102,28 +102,43 @@ int main(void)
 					else{
 						std::map<std::string, std::string> types = initialize_mime_types();
 						std::map<std::string, std::string> http_code = http_table();
+						std::string response = http_header;
 						char *parse_string_method = parse_method(buff, " ");
 						char *parse_string = parse(buff, " ");
 						if(!parse_string){
+							response += invalid_get("400", http_code);
+							send(i, response.c_str(), response.length(), 0);
 							delete[] parse_string_method;
 							delete[] parse_string;
 							continue ;
 						}
+						else if (!strcmp(parse_string_method, "TEAPOT"))
+						{
+							delete[] parse_string_method;
+							parse_string_method = strdup("GET");
+							delete[] parse_string;
+							parse_string = strdup("/teapot.html");
+						}
 						char *http_version = parse_version(buff, " ");
-						if(strlen(http_version) != 9 && strncmp(http_version, "HTTP/1.1", 9)){
+						if(strlen(http_version) != 8 && strncmp(http_version, "HTTP/1.1", 8)){
+							response += invalid_get("505", http_code);
+							send(i, response.c_str(), response.length(), 0);
 							delete[] parse_string_method;
 							delete[] parse_string;
 							delete[] http_version;
 							continue ;
 						}
 						char *copy = strdup(parse_string);
-						if (!strcmp(copy, "/")){
-
+						if (!strcmp(copy, "/") && !strcmp(parse_string_method, "GET")){
 							delete[] copy;
-							copy = strdup("index.html");
+							delete[] parse_string;
+							copy = strdup("/index.html");
+							parse_string = strdup("/index.html");
 						}
 						char *parse_ext = parse(copy, ".");
 						if(!parse_ext){
+							response += invalid_get("415", http_code);
+							send(i, response.c_str(), response.length(), 0);
 							delete[] copy;
 							delete[] parse_string_method;
 							delete[] parse_string;
@@ -131,11 +146,6 @@ int main(void)
 							continue ;
 						}
 
-						// std::cout << "Client method: " << parse_string_method << std::endl;
-						// std::cout << "Client path request: " << parse_string << std::endl;
-						// std::cout << "extention: " << parse_ext << std::endl;
-
-						std::string response = http_header;
 						if (!strcmp(parse_string_method, "GET")){
 							std::map<std::string, std::string>::iterator it = types.find("." + std::string(parse_ext));
 							if (it != types.end()){
@@ -150,7 +160,7 @@ int main(void)
 								send(i, response.c_str(), response.length(), 0);
 							}
 							else{
-								response += invalid_get("400", http_code);
+								response += invalid_get("415", http_code);
 								send(i, response.c_str(), response.length(), 0);
 							}
 						}
@@ -169,7 +179,7 @@ int main(void)
 								send(i, response.c_str(), response.length(), 0);
 							}
 							else{
-								response += invalid_post("400", http_code);
+								response += invalid_post("415", http_code);
 								send(i, response.c_str(), response.length(), 0);
 							}
 						}
@@ -187,7 +197,7 @@ int main(void)
 								send(i, response.c_str(), response.length(), 0);
 							}
 							else{
-								response += invalid_delete("400", http_code);
+								response += invalid_delete("415", http_code);
 								send(i, response.c_str(), response.length(), 0);
 							}
 						}

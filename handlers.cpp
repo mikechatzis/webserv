@@ -65,26 +65,21 @@ std::string invalid_delete(const std::string &err_cd, std::map<std::string, std:
 
 std::string valid_post(std::string file_name, std::string type, std::map<std::string, std::string> &map){
 	std::ofstream file(file_name);
+	if (!file)
+		return invalid_post("422", map);
 	file.close();
 	std::string resp;
-	std::stringstream s, s2;
-	s << "valid post message\n";
-	s2 << s.str().length();
 	resp += "200 ";
 	resp += map["200"];
 	resp += "Content-Type: ";
 	resp += type;
-	resp += "Content-Length: ";
-	resp += s2.str();
-	resp += "\r\n\r\n";
-	resp += s.str();
 	return resp;
 }
 
 std::string invalid_post(std::string err_cd, std::map<std::string, std::string> &map){
 	std::string resp;
 	std::stringstream s, s2;
-	s << "invalid post message\n";
+	s << generate_html(err_cd);
 	s2 << s.str().length();
 	resp += err_cd + " ";
 	resp += map[err_cd];
