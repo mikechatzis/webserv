@@ -20,6 +20,10 @@
 
 #define PORT "4242"
 
+typedef struct s_gconf{
+	std::map<size_t, std::string> *error_pages;
+}t_gconf;
+
 class conf_data{
 
 	private:
@@ -39,13 +43,20 @@ class conf_data{
 		void setPort(size_t p){
 			port = p;
 		}
+		std::string const &s_names() const {
+			return server_names;
+		}
+		size_t s_port() const {
+			return this->port;
+		}
 
-	friend std::vector<conf_data*> *readConfFile(std::string const &file);
+	friend std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file);
 };
+
 
 char* parse_method(char line[], const char symbol[]);
 char* parse(char line[], const char symbol[]);
 std::map<std::string, std::string> initialize_mime_types(void);
-std::vector<conf_data*> *readConfFile(std::string const &file);
+std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file);
 
 #endif
