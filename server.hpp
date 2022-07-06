@@ -20,6 +20,8 @@
 
 #define PORT "4242"
 
+std::string &removeDuplWhitespace(std::string &str);
+
 //TEXT COLOR CHANGE
 namespace Color {
     enum Code {
@@ -325,7 +327,9 @@ class conf_data{
 
 		//SET CONFIGURATION DATA//
 		void addServerNames(std::string const &s){
+			server_names += " ";
 			server_names += s;
+			server_names = removeDuplWhitespace(server_names);
 		}
 		void setPort(size_t p){
 			port = p;
@@ -378,5 +382,6 @@ char* parse_method(char line[], const char symbol[]);
 char* parse(char line[], const char symbol[]);
 std::map<std::string, std::string> initialize_mime_types(void);
 std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file);
+
 
 #endif

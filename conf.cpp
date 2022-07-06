@@ -1,5 +1,26 @@
 #include "server.hpp"
 
+static bool BothAreWhitespace(char lhs, char rhs) {
+	return std::isspace(rhs) && std::isspace(lhs);
+}
+
+std::string &removeDuplWhitespace(std::string &str){
+	for (std::string::iterator i = str.begin(); std::isspace(*i);)
+		str.erase(i);
+	{
+			std::string::iterator i;
+		for (i = --str.end(); std::isspace(*i);)
+			--i;
+		++i;
+		while (i != str.end() && std::isspace(*i))
+			str.erase(i);
+	}
+	
+	std::string::iterator new_end = std::unique(str.begin(), str.end(), BothAreWhitespace);
+	str.erase(new_end, str.end());
+	return str;
+}
+
 std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = "conf/default.conf"){
 	if (file.compare(file.size() - 5, 5, ".conf"))
 		throw std::invalid_argument("configuration file: invalid name");
@@ -73,7 +94,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 						li_ne = line;
 						if (content.eof())
 								throw std::invalid_argument("no ';' found");
-						(*it)->addServerNames(line);
+						(*it)->addServerNames(li_ne);
 						break;
 					
 					case 2:
@@ -127,7 +148,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 						li_ne = line;
 						if (content.eof())
 								throw std::invalid_argument("no ';' found");
-						(*it)->setRoot(line);
+						(*it)->setRoot(removeDuplWhitespace(li_ne));
 						break;
 					case 5:
 						content.getline(line, 10000, ';');
@@ -138,7 +159,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 						li_ne = line;
 						if (content.eof())
 								throw std::invalid_argument("no ';' found");
-						(*it)->setHost(line);
+						(*it)->setHost(removeDuplWhitespace(li_ne));
 						break;
 					case 6:
 						{
@@ -161,7 +182,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 							}
 							if (j == 3)
 								throw std::invalid_argument("Invalid HTTP method");
-							(*it)->setMethods(li_ne);
+							(*it)->setMethods(removeDuplWhitespace(li_ne));
 						}
 						break;
 					case 7:
@@ -250,14 +271,14 @@ int main(int ac, char **av){
 	catch(const std::exception& e)
 	{
 		Color::Modifier f_red(Color::Red);
-		Color::Modifier f_white(Color::White);
+		Color::Modifier reset(Color::White, 0, 1);
 		std::cerr << f_red << "\nError: " << e.what() << '\n';
-		std::cerr << "Initiating with default settings" << f_white <<"\n\n" ;
+		std::cerr << "Initiating with default settings" << reset <<"\n\n" ;
 		co = readConfFile(gconf);
 	}
 	
 	Color::Modifier f_green(Color::SeaGreen2);
-	Color::Modifier f_magenta(Color::Magenta2);
+	Color::Modifier f_magenta(Color::Magenta3_1);
 	Color::Modifier f_yellow(Color::Yellow2);
 	Color::Modifier f_grey_b(Color::Grey93, 1);
 	Color::Modifier f_grey_lighter(Color::Grey100);
@@ -265,7 +286,7 @@ int main(int ac, char **av){
 	std::vector<conf_data*>::iterator it = co->begin();
 	for (size_t i = 0; i < co->size(); i++)
 	{
-		std::cout << f_grey_b << "\nELEMENT: " << i + 1 << " {" << reset
+		std::cout << f_grey_b << "\nSERVER: " << i + 1 << " {" << reset
 		<< f_magenta << "\n\n\tserver_names: " << f_green << (*it)->s_names() 
 		<< f_magenta << "\n\tport: " << f_green << (*it)->s_port()
 		<< f_magenta << "\n\troot_dir: " << f_green << (*it)->s_root()
@@ -283,6 +304,9 @@ int main(int ac, char **av){
 		std::cout << f_blue << "default_error_code: " << reset << i->first 
 				  << f_blue << " path: " << reset << i->second << std::endl;
 	}
+
+	std:: string d("  	\none     spacey       string      \n");
+	std::cout << removeDuplWhitespace(d) << std::endl;
 	
 	for (std::vector<conf_data*>::iterator ite = co->begin(); ite != co->end(); ++ite)
 		delete *ite;
