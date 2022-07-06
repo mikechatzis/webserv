@@ -8,7 +8,7 @@ std::string &removeDuplWhitespace(std::string &str){
 	for (std::string::iterator i = str.begin(); std::isspace(*i);)
 		str.erase(i);
 	{
-			std::string::iterator i;
+		std::string::iterator i;
 		for (i = --str.end(); std::isspace(*i);)
 			--i;
 		++i;
