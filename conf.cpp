@@ -268,7 +268,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 								default:
 									if (sub == " " || sub == "")
 										break;
-									(*it)->file_locations.insert(std::make_pair(sub, Fname));
+									(*it)->addFilesToLocation(Fname, sub);
 									break;
 								}
 								Fpath.erase(0, pos + 1);

@@ -343,6 +343,11 @@ class conf_data{
 			server_names += s;
 			server_names = removeDuplWhitespace(server_names);
 		}
+		void addFilesToLocation(std::string const &path, std::string const &file){
+			std::map<std::string, std::string>::iterator it = file_locations.find(path);
+			if (it != file_locations.end()) { (*it).second += ' '; (*it).second += file; }
+			else file_locations.insert(std::make_pair(path, file));
+		}
 
 		//ACCESS CONFIGURATION DATA//
 		std::string const &s_names() const {
@@ -378,34 +383,35 @@ class conf_data{
 		//////////////////
 
 		void printErrorCodes(){
-			Color::Modifier f_bold_green(Color::DarkGoldenrod, 1);
-			Color::Modifier f_gold(Color::LightGoldenrod2_1);
-			Color::Modifier reset(Color::NavajoWhite1, 0, 1);
-
-			std::cout << f_bold_green << "\tPreset error codes:\n\n" << reset;
-			for (std::map<size_t, std::string>::iterator i = error_pages.begin(); i != error_pages.end(); i++)
-				std::cout << f_gold << "\tserver_block_error_code: " << reset << i->first
-						  << f_gold << " page: " << reset << i->second << std::endl;
-		}
-		void printFileLocations(){
+			Color::Modifier f_bold_ggold(Color::LightGoldenrod2_1, 1);
 			Color::Modifier f_green(Color::SeaGreen2);
-			Color::Modifier f_bold_green(Color::SpringGreen2, 1);
 			Color::Modifier f_magenta(Color::Magenta3_1);
 			Color::Modifier reset(Color::NavajoWhite1, 0, 1);
 
-			std::cout << f_bold_green << "\tPreset filepaths:\n\n" << reset;
+			std::cout << f_bold_ggold << "\tPreset error codes:\n\n" << reset;
+			for (std::map<size_t, std::string>::iterator i = error_pages.begin(); i != error_pages.end(); i++)
+				std::cout << f_magenta << "\tserver_block_error_code: " << f_green << i->first
+						  << f_magenta << " page: " << f_green << i->second << reset << std::endl;
+		}
+		void printFileLocations(){
+			Color::Modifier f_green(Color::SeaGreen2);
+			Color::Modifier f_magenta(Color::Magenta3_1);
+			Color::Modifier f_bold_gold(Color::LightGoldenrod2_1, 1);
+			Color::Modifier reset(Color::NavajoWhite1, 0, 1);
+
+			std::cout << f_bold_gold << "\tPreset filepaths:\n\n" << reset;
 			for (std::map<std::string, std::string>::iterator i = file_locations.begin(); i != file_locations.end(); i++)
-				std::cout << f_magenta << "\tfilename: " << f_green << i->first
-						  << f_magenta << " path: " << f_green << i->second << reset << std::endl;
+				std::cout << f_magenta << "\tpath: " << f_green << i->first
+						  << f_magenta << " filename(s): " << f_green << i->second << reset << std::endl;
 			std::cout << std::endl;
 		}
 		void printDefaultAnswers(){
 			Color::Modifier f_green(Color::SeaGreen2);
-			Color::Modifier f_bold_green(Color::SpringGreen2, 1);
+			Color::Modifier f_bold_gold(Color::LightGoldenrod2_1, 1);
 			Color::Modifier f_magenta(Color::Magenta3_1);
 			Color::Modifier reset(Color::NavajoWhite1, 0, 1);
 
-			std::cout << f_bold_green << "\tDefault answers to filepaths:\n\n" << reset;
+			std::cout << f_bold_gold << "\tDefault answers to filepaths:\n\n" << reset;
 			for (std::map<std::string, std::string>::iterator i = def_answer_if_dir.begin(); i != def_answer_if_dir.end(); i++)
 				std::cout << f_magenta << "\tpath: " << f_green << i->first
 						  << f_magenta << " answer file(s): " << f_green << i->second << reset << std::endl;
