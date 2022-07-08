@@ -20,6 +20,12 @@
 
 #define PORT "4242"
 
+/* returns true if 'value' belongs in range between 'low' and 'high', or is equal to 'high'. Otherwise returns false */
+template <typename T>
+bool isInBounds(const T& value, const T& low, const T& high) {
+	return !(value < low) && (value <= high);
+}
+
 std::string &removeDuplWhitespace(std::string &str);
 
 //TEXT COLOR CHANGE
@@ -313,10 +319,14 @@ class conf_data{
 		std::string host;
 		std::string methods;
 		std::map<size_t, std::string> error_pages;
+		std::map<std::string, std::string> file_locations;
+		std::map<std::string, std::string> def_answer_if_dir;
 		size_t port;
+		std::pair<size_t, std::string> redir_url;
+		std::vector<std::string> listing;
 	public:
 
-		conf_data() :root("root"), host("localhost"), error_pages(std::map<size_t, std::string>()), port(4242){}
+		conf_data() :server_names("EKM_amazing_server"), root("root"), host("localhost"), port(4242){}
 		conf_data(conf_data const & other){
 			this->server_names = other.server_names;
 			port = other.port;
@@ -327,21 +337,11 @@ class conf_data{
 
 		//SET CONFIGURATION DATA//
 		void addServerNames(std::string const &s){
+			if (server_names != "ECM_amazing_server")
+				server_names = "";
 			server_names += " ";
 			server_names += s;
 			server_names = removeDuplWhitespace(server_names);
-		}
-		void setPort(size_t p){
-			port = p;
-		}
-		void setRoot(std::string const &r){
-			root = r;
-		}
-		void setHost(std::string const &s){
-			host = s;
-		}
-		void setMethods(std::string const &s){
-			methods = s;
 		}
 
 		//ACCESS CONFIGURATION DATA//
@@ -354,6 +354,9 @@ class conf_data{
 		size_t s_port() const {
 			return this->port;
 		}
+		std::vector<std::string> const &s_listing() const {
+			return this->listing;
+		}
 		std::string const &s_host() const {
 			return this->host;
 		}
@@ -363,15 +366,50 @@ class conf_data{
 		std::map<size_t, std::string> const &s_errorCodes() const {
 			return error_pages;
 		}
+		std::map<std::string, std::string> const &s_fileLocations() const {
+			return file_locations;
+		}
+		std::map<std::string, std::string> const &s_defAnswers() const {
+			return def_answer_if_dir;
+		}
+		std::pair<size_t, std::string> const &s_HTTP_redir() const {
+			return this->redir_url;
+		}
 		//////////////////
 
 		void printErrorCodes(){
+			Color::Modifier f_bold_green(Color::DarkGoldenrod, 1);
 			Color::Modifier f_gold(Color::LightGoldenrod2_1);
 			Color::Modifier reset(Color::NavajoWhite1, 0, 1);
 
+			std::cout << f_bold_green << "\tPreset error codes:\n\n" << reset;
 			for (std::map<size_t, std::string>::iterator i = error_pages.begin(); i != error_pages.end(); i++)
 				std::cout << f_gold << "\tserver_block_error_code: " << reset << i->first
 						  << f_gold << " page: " << reset << i->second << std::endl;
+		}
+		void printFileLocations(){
+			Color::Modifier f_green(Color::SeaGreen2);
+			Color::Modifier f_bold_green(Color::SpringGreen2, 1);
+			Color::Modifier f_magenta(Color::Magenta3_1);
+			Color::Modifier reset(Color::NavajoWhite1, 0, 1);
+
+			std::cout << f_bold_green << "\tPreset filepaths:\n\n" << reset;
+			for (std::map<std::string, std::string>::iterator i = file_locations.begin(); i != file_locations.end(); i++)
+				std::cout << f_magenta << "\tfilename: " << f_green << i->first
+						  << f_magenta << " path: " << f_green << i->second << reset << std::endl;
+			std::cout << std::endl;
+		}
+		void printDefaultAnswers(){
+			Color::Modifier f_green(Color::SeaGreen2);
+			Color::Modifier f_bold_green(Color::SpringGreen2, 1);
+			Color::Modifier f_magenta(Color::Magenta3_1);
+			Color::Modifier reset(Color::NavajoWhite1, 0, 1);
+
+			std::cout << f_bold_green << "\tDefault answers to filepaths:\n\n" << reset;
+			for (std::map<std::string, std::string>::iterator i = def_answer_if_dir.begin(); i != def_answer_if_dir.end(); i++)
+				std::cout << f_magenta << "\tpath: " << f_green << i->first
+						  << f_magenta << " answer file(s): " << f_green << i->second << reset << std::endl;
+			std::cout << std::endl;
 		}
 
 	friend std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file);

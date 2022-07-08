@@ -4,6 +4,10 @@ static bool BothAreWhitespace(char lhs, char rhs) {
 	return std::isspace(rhs) && std::isspace(lhs);
 }
 
+static bool itIsWhiteSpace(char c){
+	return std::isspace(c);
+}
+
 std::string &removeDuplWhitespace(std::string &str){
 	for (std::string::iterator i = str.begin(); std::isspace(*i);)
 		str.erase(i);
@@ -18,6 +22,7 @@ std::string &removeDuplWhitespace(std::string &str){
 	
 	std::string::iterator new_end = std::unique(str.begin(), str.end(), BothAreWhitespace);
 	str.erase(new_end, str.end());
+	std::replace_if(str.begin(), str.end(), itIsWhiteSpace, ' ');
 	return str;
 }
 
@@ -31,6 +36,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 		bool root;
 		bool host;
 		bool methods;
+		bool redir;
 	} doubles;
 
 	std::ifstream f(file, std::ifstream::in);
@@ -66,13 +72,13 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 
 		/* CASE "SERVER" */
 		if (l_ine == "server"){
-			doubles.port = doubles.root = doubles.host = doubles.methods = false;
+			doubles.port = doubles.root = doubles.host = doubles.methods = doubles.redir = false;
 			co->push_back(new conf_data());
 
 			std::vector<conf_data*>::iterator it= --co->end();
 			f.getline(line, 10000, '}');
 			std::stringstream content(line);
-			std::string const rules[7] = {"server_names", "port", "error_page", "root", "host", "allowed_methods", ""};
+			std::string const rules[9] = {"server_names", "port", "error_page", "root", "host", "allowed_methods", "return", "location", ""};
 
 			while (!content.eof())
 			{
@@ -80,7 +86,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 				std::string li_ne(line);
 				li_ne.erase(remove_if(li_ne.begin(), li_ne.end(), isspace), li_ne.end());
 				int pos = 0;
-				for (size_t i = 0; i < 7; ++i)
+				for (size_t i = 0; i < 9; ++i)
 				{
 					if (li_ne == rules[i]){
 						pos = i + 1;
@@ -108,10 +114,10 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 							throw std::invalid_argument("no ';' found");
 						li_ne = line;
 						li_ne.erase(remove_if(li_ne.begin(), li_ne.end(), isspace), li_ne.end());
-						(*it)->setPort(strtol(li_ne.c_str(), &end, 10));
+						(*it)->port = strtol(li_ne.c_str(), &end, 10);
 						if (!(*it)->port || *end){
 							std::cerr << "invalid port value: '" << li_ne << "', port set to default" << std::endl;
-							(*it)->setPort(4242);
+							(*it)->port = 4242;
 						}
 						break;
 					case 3:
@@ -126,7 +132,8 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 							{
 								if (isdigit(line[j])){
 									size_t c = strtol(&line[j], &end, 10);
-									if (!std::isspace(*end)|| std::to_string(c).length() != 3)
+									if (!std::isspace(*end) || (!isInBounds<size_t>(c, 100, 103) && !isInBounds<size_t>(c, 200, 208) && !isInBounds<size_t>(c, 300, 308)
+										&& !isInBounds<size_t>(c, 400, 451) && !isInBounds<size_t>(c, 500, 511)))
 										throw std::invalid_argument("invalid error code");
 									j += 3;
 									codes.push_back(c);
@@ -148,7 +155,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 						li_ne = line;
 						if (content.eof())
 								throw std::invalid_argument("no ';' found");
-						(*it)->setRoot(removeDuplWhitespace(li_ne));
+						(*it)->root = removeDuplWhitespace(li_ne);
 						break;
 					case 5:
 						content.getline(line, 10000, ';');
@@ -159,7 +166,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 						li_ne = line;
 						if (content.eof())
 								throw std::invalid_argument("no ';' found");
-						(*it)->setHost(removeDuplWhitespace(li_ne));
+						(*it)->host = removeDuplWhitespace(li_ne);
 						break;
 					case 6:
 						{
@@ -182,10 +189,102 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 							}
 							if (j == 3)
 								throw std::invalid_argument("Invalid HTTP method");
-							(*it)->setMethods(removeDuplWhitespace(li_ne));
+							(*it)->methods = removeDuplWhitespace(li_ne);
 						}
 						break;
 					case 7:
+						content.getline(line, 10000, ';');
+						if (doubles.redir)
+							break;
+						else
+							doubles.redir = true;
+						{
+							if (content.eof())
+									throw std::invalid_argument("no ';' found");
+							size_t code;
+							li_ne = line;
+							char *end;
+							for(size_t j = 0; line[j]; j++)
+							{
+								if (isdigit(line[j])){
+									code = strtol(&line[j], &end, 10);
+									if (!std::isspace(*end) || (!isInBounds<size_t>(code, 100, 103) && !isInBounds<size_t>(code, 200, 208) && !isInBounds<size_t>(code, 300, 308)
+										&& !isInBounds<size_t>(code, 400, 451) && !isInBounds<size_t>(code, 500, 511)))
+										throw std::invalid_argument("invalid error code");
+									j += 3;
+								}
+								else if(isalpha(line[j])){
+									(*it)->redir_url = std::make_pair(code, &line[j]);
+									break;
+								}
+							}
+						}
+						break;
+					case 8:
+						content.getline(line, 10000, '(');
+						if (content.eof())
+							throw std::invalid_argument("expected '('");
+						{
+							std::string Fname;
+							std::string Fpath;
+							Fname = line;
+							removeDuplWhitespace(Fname);
+							if (Fname.find_first_of(" \t\n\v\f\r") != Fname.npos)
+								throw std::invalid_argument("only one filename allowed");
+							content.getline(line, 10000, ')');
+							if (content.eof())
+								throw std::invalid_argument("expected ')'");
+							Fpath = line;
+							removeDuplWhitespace(Fpath);
+							if (Fpath[Fpath.length() - 1] != ';')
+								throw std::invalid_argument("no ';' found");
+							size_t pos = 0;
+							std::string sub;
+							while ((pos = Fpath.find(';')) != std::string::npos) {
+								sub = Fpath.substr(0, pos);
+								removeDuplWhitespace(sub);
+								std::string const cases[2] = {"autoindex", "index"};
+								int ind = 0;
+								for (size_t i = 0; i < 2; i++)
+								{
+									if (!sub.compare(0, cases[i].length(), cases[i])){
+										ind = i + 1;
+										break;
+									}
+								}
+								switch (ind)
+								{
+								case 1:
+									if (sub.compare(10, 2, "on"))
+										throw std::invalid_argument("only allowed value for 'autoindex' is 'on'");
+									(*it)->listing.push_back(Fname);
+									break;
+								case 2:
+								{
+									std::string def_files = sub.substr(6);
+									(*it)->def_answer_if_dir.insert(std::make_pair(Fname, removeDuplWhitespace(def_files)));
+								}
+									break;
+								default:
+									if (sub == " " || sub == "")
+										break;
+									(*it)->file_locations.insert(std::make_pair(sub, Fname));
+									break;
+								}
+								Fpath.erase(0, pos + 1);
+							}
+							
+							// if (int pos = Fpath.find_first_of(" \t\n\v\f\r") != Fpath.npos){
+							// 	std::string listing = Fpath.substr(Fpath.find_first_of(';') + 1, Fpath.length() - sub.length());
+							// 	removeDuplWhitespace(listing);
+							// 	if (listing != "autoindex on;" && listing != "autoindex on ;")
+							// 		throw std::invalid_argument("only one path allowed per file");
+							// 	(*it)->listing.push_back(sub);
+							// }
+							
+						}
+						break;
+					case 9:
 						break;
 					default:
 						throw std::invalid_argument("invalid rule");
@@ -198,7 +297,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 		else if(l_ine == "error_page"){
 			f.getline(line, 10000, '}');
 			std::stringstream content(line);
-			std::string const rules[2] = {"codes_to_filepath", ""};
+			std::string const rules[2] = {"error_page", ""};
 
 			while (!content.eof())
 			{
@@ -227,7 +326,8 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 							{
 								if (isdigit(line[j])){
 									size_t c = strtol(&line[j], &end, 10);
-									if (!std::isspace(*end)|| std::to_string(c).length() != 3)
+									if (!std::isspace(*end) || (!isInBounds<size_t>(c, 100, 103) && !isInBounds<size_t>(c, 200, 208) && !isInBounds<size_t>(c, 300, 308)
+										&& !isInBounds<size_t>(c, 400, 451) && !isInBounds<size_t>(c, 500, 511)))
 										throw std::invalid_argument("invalid error code");
 									j += 3;
 									codes.push_back(c);
@@ -291,7 +391,13 @@ int main(int ac, char **av){
 		<< f_magenta << "\n\tport: " << f_green << (*it)->s_port()
 		<< f_magenta << "\n\troot_dir: " << f_green << (*it)->s_root()
 		<< f_magenta << "\n\tallowed methods: " << f_green << (*it)->s_methods()
-		<< f_magenta << "\n\thost: " << f_green << (*it)->s_host() << std::endl << std::endl;
+		<< f_magenta << "\n\tHTTP redirection(code, URL): " << f_green << (*it)->s_HTTP_redir().first << ", " << (*it)->s_HTTP_redir().second
+		<< f_yellow << "\n\n\tdirectory_listing on for:\n" << f_green;
+		for (std::vector<std::string>::const_iterator i = (*it)->s_listing().begin(); i != (*it)->s_listing().end(); i++)
+			std::cout << "\t\t" << *i << std::endl;
+		std::cout << f_magenta << "\n\thost: " << f_green << (*it)->s_host() << std::endl << std::endl;
+		(*it)->printFileLocations();
+		(*it)->printDefaultAnswers();
 		(*it)->printErrorCodes();
 		std::cout << f_grey_b << "}" << std::endl << std::endl;
 		++it;
@@ -304,9 +410,6 @@ int main(int ac, char **av){
 		std::cout << f_blue << "default_error_code: " << reset << i->first 
 				  << f_blue << " path: " << reset << i->second << std::endl;
 	}
-
-	std:: string d("  	\none     spacey       string      \n");
-	std::cout << removeDuplWhitespace(d) << std::endl;
 	
 	for (std::vector<conf_data*>::iterator ite = co->begin(); ite != co->end(); ++ite)
 		delete *ite;
