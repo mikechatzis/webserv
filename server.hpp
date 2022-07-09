@@ -435,7 +435,6 @@ class conf_data{
 		}
 
 	friend std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file);
-	friend void validate(std::vector<conf_data*> *d, t_gconf *c);
 };
 
 
