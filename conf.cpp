@@ -45,6 +45,8 @@ void validate(std::vector<conf_data*> *d, t_gconf *c){
 
 bool IsPathsDir(std::string const &str)
 {
+	Color::Modifier f_red(Color::Red);
+	Color::Modifier reset(Color::White, 0, 1);
 	struct stat buffer;
 	std::stringstream s(str);
 	std::string token;
@@ -52,7 +54,7 @@ bool IsPathsDir(std::string const &str)
 		bzero(&buffer, sizeof(buffer));
 		stat (token.c_str(), &buffer);
 		if (!S_ISDIR(buffer.st_mode)){
-			std::cout << "Path: " << token << " is not a directory" << std::endl;
+			std::cout << f_red << "Path: " << token << " is not a directory" << reset << std::endl;
 			return 0;
 		}
 	}
