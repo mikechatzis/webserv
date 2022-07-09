@@ -39,7 +39,7 @@ void validate(std::vector<conf_data*> *d, t_gconf *c){
 	}
 	removeDuplWhitespace(buff);
 	if (!IsPathsDir(buff))
-		throw std::invalid_argument("");
+		throw std::invalid_argument("not a directory");
 	
 }
 
@@ -54,7 +54,7 @@ bool IsPathsDir(std::string const &str)
 		bzero(&buffer, sizeof(buffer));
 		stat (token.c_str(), &buffer);
 		if (!S_ISDIR(buffer.st_mode)){
-			std::cout << f_red << "Path: " << token << " is not a directory" << reset << std::endl;
+			std::cout << f_red << "\nPath: " << token << " is not a directory" << reset << std::endl;
 			return 0;
 		}
 	}
@@ -200,8 +200,12 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 									codes.push_back(c);
 								}
 								else if(isalpha(line[j])){
+									std::string temp(&line[j]);
+									removeDuplWhitespace(temp);
+									if (temp.find_first_of(' ') != temp.npos)
+										throw std::invalid_argument("only one filepath allowed");
 									for (std::vector<size_t>::iterator i = codes.begin(); i != codes.end(); ++i)
-										(*it)->error_pages.insert(std::make_pair(*i, &line[j]));
+										(*it)->error_pages.insert(std::make_pair(*i, temp));
 									break;
 								}
 							}
@@ -385,6 +389,10 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 									codes.push_back(c);
 								}
 								else if(isalpha(line[j])){
+									std::string temp(&line[j]);
+									removeDuplWhitespace(temp);
+									if (temp.find_first_of(' ') != temp.npos)
+										throw std::invalid_argument("only one filepath allowed");
 									for (std::vector<size_t>::iterator it = codes.begin(); it != codes.end(); it++)
 										gconf->error_pages->insert(std::make_pair(*it, &line[j]));
 									break;
