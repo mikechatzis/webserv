@@ -268,26 +268,16 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 								default:
 									if (sub == " " || sub == "")
 										break;
-									(*it)->addFilesToLocation(Fname, sub);
 									break;
 								}
 								Fpath.erase(0, pos + 1);
 							}
-							
-							// if (int pos = Fpath.find_first_of(" \t\n\v\f\r") != Fpath.npos){
-							// 	std::string listing = Fpath.substr(Fpath.find_first_of(';') + 1, Fpath.length() - sub.length());
-							// 	removeDuplWhitespace(listing);
-							// 	if (listing != "autoindex on;" && listing != "autoindex on ;")
-							// 		throw std::invalid_argument("only one path allowed per file");
-							// 	(*it)->listing.push_back(sub);
-							// }
-							
 						}
 						break;
 					case 9:
 						break;
 					default:
-						throw std::invalid_argument("invalid rule");
+						throw std::invalid_argument("invalid rule: " + li_ne);
 						break;
 				}
 				
@@ -343,14 +333,66 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 					case 2:
 						break;
 					default:
-						throw std::invalid_argument("invalid rule");
+						throw std::invalid_argument("invalid rule: " + li_ne);
+						break;
+				}
+			}
+		}
+		/* CASE CGI */
+		else if(l_ine == "CGI"){
+			f.getline(line, 10000, '}');
+			std::stringstream content(line);
+			std::string const rules[2] = {"extension", ""};
+
+			while (!content.eof())
+			{
+				content.getline(line, 10000, ':');
+				std::string li_ne(line);
+				li_ne.erase(remove_if(li_ne.begin(), li_ne.end(), isspace), li_ne.end());
+				int pos = 0;
+				for (size_t i = 0; i < 2; i++)
+				{
+					if (li_ne == rules[i]){
+						pos = i + 1;
+						break;
+					}
+				}
+				switch (pos)
+				{
+					case 1:
+						content.getline(line, 10000, '(');
+						if (content.eof())
+							throw std::invalid_argument("expected '('");
+						{
+							std::string Fext;
+							std::string Fpath;
+							Fext = line;
+							removeDuplWhitespace(Fext);
+							if (Fext.find_first_of(" \t\n\v\f\r") != Fext.npos)
+								throw std::invalid_argument("only one file extension per rule allowed");
+							content.getline(line, 10000, ')');
+							if (content.eof())
+								throw std::invalid_argument("expected ')'");
+							Fpath = line;
+							removeDuplWhitespace(Fpath);
+							int pos = Fpath.find_first_of(';');
+							if (pos == static_cast<int>(Fpath.npos))
+								throw std::invalid_argument("no ';' found");
+							std::string paths = Fpath.substr(0, pos);
+							gconf->CGI->insert(std::make_pair(Fext, paths));
+						}
+						break;
+					case 2:
+						break;
+					default:
+						throw std::invalid_argument("invalid rule: " + li_ne);
 						break;
 				}
 			}
 		}
 		else if (l_ine == ""){}
 		else
-			throw std::invalid_argument(l_ine);
+			throw std::invalid_argument("invalid rule: " + l_ine);
 	}
 	return co;
 }
@@ -360,6 +402,7 @@ int main(int ac, char **av){
 	std::vector<conf_data*> *co;
 	t_gconf *gconf = new t_gconf;
 	gconf->error_pages = new std::map<size_t, std::string>();
+	gconf->CGI = new std::map<std::string, std::string>();
 
 	try
 	{
@@ -374,6 +417,8 @@ int main(int ac, char **av){
 		Color::Modifier reset(Color::White, 0, 1);
 		std::cerr << f_red << "\nError: " << e.what() << '\n';
 		std::cerr << "Initiating with default settings" << reset <<"\n\n" ;
+		gconf->error_pages->clear();
+		gconf->CGI->clear();
 		co = readConfFile(gconf);
 	}
 	
@@ -410,12 +455,21 @@ int main(int ac, char **av){
 		std::cout << f_blue << "default_error_code: " << reset << i->first 
 				  << f_blue << " path: " << reset << i->second << std::endl;
 	}
+
+	std::cout << f_grey_b << "\nCGI PATHS\n\n" << reset;
+
+	for (std::map<std::string, std::string>::iterator i = gconf->CGI->begin(); i != gconf->CGI->end(); i++)
+	{
+		std::cout << f_blue << "CGI file extension: " << reset << i->first 
+				  << f_blue << " paths: " << reset << i->second << std::endl;
+	}
 	
 	for (std::vector<conf_data*>::iterator ite = co->begin(); ite != co->end(); ++ite)
 		delete *ite;
 	
 	delete co;
 	delete gconf->error_pages;
+	delete gconf->CGI;
 	delete gconf;
 	return 0;
 }

@@ -308,6 +308,7 @@ namespace Color {
 ///////////////////
 
 typedef struct s_gconf{
+	std::map<std::string, std::string> *CGI;
 	std::map<size_t, std::string> *error_pages;
 }t_gconf;
 
@@ -334,6 +335,19 @@ class conf_data{
 			root = other.root;
 		}
 		virtual~conf_data(){}
+
+		void clear(){
+			server_names = "EKM_amazing_server";
+			root = "root";
+			host = "localhost";
+			port = 4242;
+			methods.clear();
+			error_pages.clear();
+			file_locations.clear();
+			def_answer_if_dir.clear();
+			redir_url = std::pair<size_t, std::string>(0, "");
+			listing.clear();
+		}
 
 		//SET CONFIGURATION DATA//
 		void addServerNames(std::string const &s){
