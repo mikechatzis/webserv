@@ -9,6 +9,7 @@
 #include <fcntl.h> // For fcntl
 #include <netdb.h> // For addrinfo
 #include <arpa/inet.h> // For inet_ntop
+#include <sys/stat.h>
 #include <map>
 #include <vector>
 #include <iostream>
@@ -27,6 +28,7 @@ bool isInBounds(const T& value, const T& low, const T& high) {
 }
 
 std::string &removeDuplWhitespace(std::string &str);
+bool IsPathsDir(std::string const &str);
 
 //TEXT COLOR CHANGE
 namespace Color {
@@ -336,7 +338,7 @@ class conf_data{
 		}
 		virtual~conf_data(){}
 
-		void clear(){
+		void clear(){ //reset object to default 
 			server_names = "EKM_amazing_server";
 			root = "root";
 			host = "localhost";
@@ -433,6 +435,7 @@ class conf_data{
 		}
 
 	friend std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file);
+	friend void validate(std::vector<conf_data*> *d, t_gconf *c);
 };
 
 
@@ -440,6 +443,7 @@ char* parse_method(char line[], const char symbol[]);
 char* parse(char line[], const char symbol[]);
 std::map<std::string, std::string> initialize_mime_types(void);
 std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file);
+void validate(std::vector<conf_data*> *d, t_gconf *c);
 
 
 #endif

@@ -1,5 +1,64 @@
 #include "server.hpp"
 
+void validate(std::vector<conf_data*> *d, t_gconf *c){
+	std::string buff;
+	{
+		std::map<std::string, std::string>::iterator it = c->CGI->end();
+		for (std::map<std::string, std::string>::iterator i = c->CGI->begin(); i != it; i++){
+			buff += " ";
+			buff += (*i).second;
+		}
+	}
+	{
+		std::vector<conf_data*>::const_iterator it = d->begin();
+		for (size_t i = 0; i < d->size(); i++)
+		{
+			buff += " ";
+			buff += (*it)->s_root();
+			std::map<std::string, std::string>::const_iterator conit = (*it)->s_fileLocations().end();
+			for (std::map<std::string, std::string>::const_iterator i = (*it)->s_fileLocations().begin(); i != conit; i++)
+			{
+				buff += " ";
+				buff += (*i).first;
+			}
+		}
+	}
+	{
+		std::vector<conf_data*>::const_iterator it = d->begin();
+		for (size_t i = 0; i < d->size(); i++)
+		{
+			buff += " ";
+			buff += (*it)->s_root();
+			std::map<std::string, std::string>::const_iterator conit = (*it)->s_defAnswers().end();
+			for (std::map<std::string, std::string>::const_iterator i = (*it)->s_defAnswers().begin(); i != conit; i++)
+			{
+				buff += " ";
+				buff += (*i).first;
+			}
+		}
+	}
+	removeDuplWhitespace(buff);
+	if (!IsPathsDir(buff))
+		throw std::invalid_argument("");
+	
+}
+
+bool IsPathsDir(std::string const &str)
+{
+	struct stat buffer;
+	std::stringstream s(str);
+	std::string token;
+	while (std::getline (s, token, ' ')){
+		bzero(&buffer, sizeof(buffer));
+		stat (token.c_str(), &buffer);
+		if (!S_ISDIR(buffer.st_mode)){
+			std::cout << "Path: " << token << " is not a directory" << std::endl;
+			return 0;
+		}
+	}
+	return 1;
+}
+
 static bool BothAreWhitespace(char lhs, char rhs) {
 	return std::isspace(rhs) && std::isspace(lhs);
 }
@@ -268,6 +327,7 @@ std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file = 
 								default:
 									if (sub == " " || sub == "")
 										break;
+									(*it)->file_locations.insert(std::make_pair(Fname, removeDuplWhitespace(sub)));
 									break;
 								}
 								Fpath.erase(0, pos + 1);
@@ -410,6 +470,7 @@ int main(int ac, char **av){
 			co = readConfFile(gconf, av[1]);
 		else
 			throw std::invalid_argument("Invalid argument");
+		validate(co, gconf);
 	}
 	catch(const std::exception& e)
 	{
