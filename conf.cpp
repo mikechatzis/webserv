@@ -536,7 +536,28 @@ int main(int ac, char **av){
 	// }
 
 	
-	std::cout << (*co->begin())->fileLocationParser("custom_502.html");
+	std::cout << (*co->begin())->fileLocationParser("custom_502.html") << std::endl;
+	std::cout << (*co->begin())->fileLocationParser("someFile.css") << std::endl;
+	std::cout << (*co->begin())->findErrorPage(404) << std::endl;
+	std::cout << (*co->begin())->findErrorPage(412) << std::endl;
+
+	{
+		std::string buff;
+		while ((buff = (*co->begin())->findDefaultAnswerToFilepath("/goinfre/mchatzip/webserv/")) != "")
+			std::cout << buff << std::endl;
+		buff = (*co->begin())->findDefaultAnswerToFilepath("/goinfre/mchatzip/webserv/", 1);
+		std::cout << buff << std::endl;
+	}
+	{
+		std::string buff;
+		while ((buff = (*co->begin())->findDefaultAnswerToFilepath("invalid")) != "")
+			std::cout << buff << std::endl;
+	}
+	{
+		std::string buff;
+		while ((buff = (*co->begin())->findDefaultAnswerToFilepath("/Users/mchatzip/")) != "")
+			std::cout << buff << std::endl;
+	}
 	
 	
 	for (std::vector<conf_data*>::iterator ite = co->begin(); ite != co->end(); ++ite)
