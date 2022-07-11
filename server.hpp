@@ -329,6 +329,8 @@ class conf_data{
 		std::vector<std::string> listing;
 	public:
 
+		std::string full_file_path;
+
 		conf_data() :server_names("EKM_amazing_server"), root("root"), host("localhost"), port(4242){}
 		conf_data(conf_data const & other){
 			this->server_names = other.server_names;
@@ -406,7 +408,7 @@ class conf_data{
 
 			std::cout << f_bold_ggold << "\tPreset error codes:\n\n" << reset;
 			for (std::map<size_t, std::string>::iterator i = error_pages.begin(); i != error_pages.end(); i++)
-				std::cout << f_magenta << "\tserver_block_error_code: " << f_green << i->first
+				std::cout << f_magenta << "\t\tserver_block_error_code: " << f_green << i->first
 						  << f_magenta << " page: " << f_green << i->second << reset << std::endl;
 		}
 		void printFileLocations(){
@@ -417,7 +419,7 @@ class conf_data{
 
 			std::cout << f_bold_gold << "\tPreset filepaths:\n\n" << reset;
 			for (std::map<std::string, std::string>::iterator i = file_locations.begin(); i != file_locations.end(); i++)
-				std::cout << f_magenta << "\tpath: " << f_green << i->first
+				std::cout << f_magenta << "\t\tpath: " << f_green << i->first
 						  << f_magenta << " filename(s): " << f_green << i->second << reset << std::endl;
 			std::cout << std::endl;
 		}
@@ -429,9 +431,27 @@ class conf_data{
 
 			std::cout << f_bold_gold << "\tDefault answers to filepaths:\n\n" << reset;
 			for (std::map<std::string, std::string>::iterator i = def_answer_if_dir.begin(); i != def_answer_if_dir.end(); i++)
-				std::cout << f_magenta << "\tpath: " << f_green << i->first
+				std::cout << f_magenta << "\t\tpath: " << f_green << i->first
 						  << f_magenta << " answer file(s): " << f_green << i->second << reset << std::endl;
 			std::cout << std::endl;
+		}
+		/* Searches file_locations map for "file". If file exists, full_file_path is set to the path to the file, as set in the configuration file,
+			and a reference to it is returned. If it does not exist, a reference to the empty string "full_file_path" is returned. */
+		std::string &fileLocationParser(std::string const &file) {
+			std::map<std::string, std::string>::const_iterator it;
+			for (it = file_locations.begin(); it != file_locations.end(); ++it){
+				std::string buff(it->second);
+				size_t pos = 0;
+				 while ((pos = buff.find(' ')) != buff.npos){
+					 std::string token(buff.substr(0, pos));
+					 if (token == file)
+					 	return full_file_path = it->first + token;
+					buff.erase(0, pos + 1);
+				 }
+				 if (buff == file)
+				 	return full_file_path = it->first + buff;
+			}
+			return full_file_path;
 		}
 
 	friend std::vector<conf_data*> *readConfFile(t_gconf *gconf, std::string const &file);
