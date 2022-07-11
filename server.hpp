@@ -455,7 +455,7 @@ class conf_data{
 			}
 			return full_file_path = file;
 		}
-		/* Returns the error page path, matching a specific error code. An exceptin is thrown if the error code is invalid. If no path is specifed in the .conf file,
+		/* Returns the error page path, matching a specific error code. An exception is thrown if the error code is invalid. If no path is specifed in the .conf file,
 			returns a reference to an empty string instead */
 		std::string const &findErrorPage(size_t error_code){
 			if (!isInBounds<size_t>(error_code, 100, 103) && !isInBounds<size_t>(error_code, 200, 208) && !isInBounds<size_t>(error_code, 300, 308)
