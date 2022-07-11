@@ -467,8 +467,8 @@ class conf_data{
 			return empty_string;
 		}
 		/* Returns a reference to the filepath of the 1st file specified under the "index" label in a "location" block. Subsequent calls
-			with the same filepath will return any additional files provided or an empty string after the call to the last file.
-			Optional argument "reset", resets the function's tracking of the specific filepath. NOTE: The function call with the reset set
+			with the same filepath will return any additional files provided under the "index" label or an empty string after the call to the last file.
+			Optional argument "reset": if set to true, resets the function's tracking of the specific filepath. NOTE: The function call with the reset set
 			to true counts as the 1st call */
 		std::string &findDefaultAnswerToFilepath(std::string const &filepath, bool reset = false){
 			std::map<std::string, std::string>::const_iterator it;
