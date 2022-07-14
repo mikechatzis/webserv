@@ -330,6 +330,7 @@ class conf_data{
 		std::pair<size_t, std::string> redir_url;
 		std::vector<std::string> listing;
 		std::string const empty_string;
+		std::string const slash;
 	public:
 
 		std::string full_file_path;
@@ -465,8 +466,8 @@ class conf_data{
 				throw std::invalid_argument("invalid error code");
 			std::map<size_t, std::string>::const_iterator it;
 			if ((it = error_pages.find(error_code)) != error_pages.end())
-				return "/" + it->second;
-			return "/" + empty_string;
+				return it->second;
+			return empty_string;
 		}
 		/* Returns a reference to the filepath of the 1st file specified under the "index" label in a "location" block. Subsequent calls
 			with the same filepath will return any additional files provided under the "index" label or an empty string after the call to the last file.
