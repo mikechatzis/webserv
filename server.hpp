@@ -10,6 +10,7 @@
 #include <netdb.h> // For addrinfo
 #include <arpa/inet.h> // For inet_ntop
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <map>
 #include <vector>
 #include <iostream>
@@ -18,6 +19,7 @@
 #include <cstring>
 #include <sstream>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define PORT "4242"
 
@@ -463,8 +465,8 @@ class conf_data{
 				throw std::invalid_argument("invalid error code");
 			std::map<size_t, std::string>::const_iterator it;
 			if ((it = error_pages.find(error_code)) != error_pages.end())
-				return it->second;
-			return empty_string;
+				return "/" + it->second;
+			return "/" + empty_string;
 		}
 		/* Returns a reference to the filepath of the 1st file specified under the "index" label in a "location" block. Subsequent calls
 			with the same filepath will return any additional files provided under the "index" label or an empty string after the call to the last file.
