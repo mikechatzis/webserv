@@ -1,4 +1,5 @@
 #include "server.hpp"
+#include "CGI.hpp"
 
 void validate(std::vector<conf_data*> *d, t_gconf *c){
 	std::string buff;
@@ -493,72 +494,74 @@ int main(int ac, char **av){
 		co = readConfFile(gconf);
 	}
 	
-	// Color::Modifier f_green(Color::SeaGreen2);
-	// Color::Modifier f_magenta(Color::Magenta3_1);
-	// Color::Modifier f_yellow(Color::Yellow2);
-	// Color::Modifier f_grey_b(Color::Grey93, 1);
-	// Color::Modifier f_grey_lighter(Color::Grey100);
-	// Color::Modifier reset(Color::White, 0, 1);
-	// std::vector<conf_data*>::iterator it = co->begin();
-	// for (size_t i = 0; i < co->size(); i++)
+	// // Color::Modifier f_green(Color::SeaGreen2);
+	// // Color::Modifier f_magenta(Color::Magenta3_1);
+	// // Color::Modifier f_yellow(Color::Yellow2);
+	// // Color::Modifier f_grey_b(Color::Grey93, 1);
+	// // Color::Modifier f_grey_lighter(Color::Grey100);
+	// // Color::Modifier reset(Color::White, 0, 1);
+	// // std::vector<conf_data*>::iterator it = co->begin();
+	// // for (size_t i = 0; i < co->size(); i++)
+	// // {
+	// // 	std::cout << f_grey_b << "\nSERVER: " << i + 1 << " {" << reset
+	// // 	<< f_magenta << "\n\n\tserver_names: " << f_green << (*it)->s_names() 
+	// // 	<< f_magenta << "\n\tport: " << f_green << (*it)->s_port()
+	// // 	<< f_magenta << "\n\troot_dir: " << f_green << (*it)->s_root()
+	// // 	<< f_magenta << "\n\tallowed methods: " << f_green << (*it)->s_methods()
+	// // 	<< f_magenta << "\n\tHTTP redirection(code, URL): " << f_green << (*it)->s_HTTP_redir().first << ", " << (*it)->s_HTTP_redir().second
+	// // 	<< f_yellow << "\n\n\tdirectory_listing on for:\n" << f_green;
+	// // 	for (std::vector<std::string>::const_iterator i = (*it)->s_listing().begin(); i != (*it)->s_listing().end(); i++)
+	// // 		std::cout << "\t\t" << *i << std::endl;
+	// // 	std::cout << f_magenta << "\n\thost: " << f_green << (*it)->s_host() << std::endl << std::endl;
+	// // 	(*it)->printFileLocations();
+	// // 	(*it)->printDefaultAnswers();
+	// // 	(*it)->printErrorCodes();
+	// // 	std::cout << f_grey_b << "}" << std::endl << std::endl;
+	// // 	++it;
+	// // }
+	
+	// // Color::Modifier f_blue(Color::DeepSkyBlue2);
+	// // std::cout << f_grey_b << "DEFAULT ERROR CODES\n\n" << reset;
+	// // for (std::map<size_t, std::string>::iterator i = gconf->error_pages->begin(); i != gconf->error_pages->end(); i++)
+	// // {
+	// // 	std::cout << f_blue << "default_error_code: " << reset << i->first 
+	// // 			  << f_blue << " path: " << reset << i->second << std::endl;
+	// // }
+
+	// // std::cout << f_grey_b << "\nCGI PATHS\n\n" << reset;
+
+	// // for (std::map<std::string, std::string>::iterator i = gconf->CGI->begin(); i != gconf->CGI->end(); i++)
+	// // {
+	// // 	std::cout << f_blue << "CGI file extension: " << reset << i->first 
+	// // 			  << f_blue << " paths: " << reset << i->second << std::endl;
+	// // }
+
+	
+	// std::cout << (*co->begin())->fileLocationParser("custom_502.html") << std::endl;
+	// std::cout << (*co->begin())->fileLocationParser("someFile.css") << std::endl;
+	// std::cout << (*co->begin())->findErrorPage(404) << std::endl;
+	// std::cout << (*co->begin())->findErrorPage(412) << std::endl;
+
 	// {
-	// 	std::cout << f_grey_b << "\nSERVER: " << i + 1 << " {" << reset
-	// 	<< f_magenta << "\n\n\tserver_names: " << f_green << (*it)->s_names() 
-	// 	<< f_magenta << "\n\tport: " << f_green << (*it)->s_port()
-	// 	<< f_magenta << "\n\troot_dir: " << f_green << (*it)->s_root()
-	// 	<< f_magenta << "\n\tallowed methods: " << f_green << (*it)->s_methods()
-	// 	<< f_magenta << "\n\tHTTP redirection(code, URL): " << f_green << (*it)->s_HTTP_redir().first << ", " << (*it)->s_HTTP_redir().second
-	// 	<< f_yellow << "\n\n\tdirectory_listing on for:\n" << f_green;
-	// 	for (std::vector<std::string>::const_iterator i = (*it)->s_listing().begin(); i != (*it)->s_listing().end(); i++)
-	// 		std::cout << "\t\t" << *i << std::endl;
-	// 	std::cout << f_magenta << "\n\thost: " << f_green << (*it)->s_host() << std::endl << std::endl;
-	// 	(*it)->printFileLocations();
-	// 	(*it)->printDefaultAnswers();
-	// 	(*it)->printErrorCodes();
-	// 	std::cout << f_grey_b << "}" << std::endl << std::endl;
-	// 	++it;
+	// 	std::string buff;
+	// 	while ((buff = (*co->begin())->findDefaultAnswerToFilepath("/goinfre/mchatzip/webserv/")) != "")
+	// 		std::cout << buff << std::endl;
+	// 	buff = (*co->begin())->findDefaultAnswerToFilepath("/goinfre/mchatzip/webserv/", 1);
+	// 	std::cout << buff << std::endl;
+	// }
+	// {
+	// 	std::string buff;
+	// 	while ((buff = (*co->begin())->findDefaultAnswerToFilepath("invalid")) != "")
+	// 		std::cout << buff << std::endl;
+	// }
+	// {
+	// 	std::string buff;
+	// 	while ((buff = (*co->begin())->findDefaultAnswerToFilepath("/Users/mchatzip/")) != "")
+	// 		std::cout << buff << std::endl;
 	// }
 	
-	// Color::Modifier f_blue(Color::DeepSkyBlue2);
-	// std::cout << f_grey_b << "DEFAULT ERROR CODES\n\n" << reset;
-	// for (std::map<size_t, std::string>::iterator i = gconf->error_pages->begin(); i != gconf->error_pages->end(); i++)
-	// {
-	// 	std::cout << f_blue << "default_error_code: " << reset << i->first 
-	// 			  << f_blue << " path: " << reset << i->second << std::endl;
-	// }
-
-	// std::cout << f_grey_b << "\nCGI PATHS\n\n" << reset;
-
-	// for (std::map<std::string, std::string>::iterator i = gconf->CGI->begin(); i != gconf->CGI->end(); i++)
-	// {
-	// 	std::cout << f_blue << "CGI file extension: " << reset << i->first 
-	// 			  << f_blue << " paths: " << reset << i->second << std::endl;
-	// }
-
-	
-	std::cout << (*co->begin())->fileLocationParser("custom_502.html") << std::endl;
-	std::cout << (*co->begin())->fileLocationParser("someFile.css") << std::endl;
-	std::cout << (*co->begin())->findErrorPage(404) << std::endl;
-	std::cout << (*co->begin())->findErrorPage(412) << std::endl;
-
-	{
-		std::string buff;
-		while ((buff = (*co->begin())->findDefaultAnswerToFilepath("/goinfre/mchatzip/webserv/")) != "")
-			std::cout << buff << std::endl;
-		buff = (*co->begin())->findDefaultAnswerToFilepath("/goinfre/mchatzip/webserv/", 1);
-		std::cout << buff << std::endl;
-	}
-	{
-		std::string buff;
-		while ((buff = (*co->begin())->findDefaultAnswerToFilepath("invalid")) != "")
-			std::cout << buff << std::endl;
-	}
-	{
-		std::string buff;
-		while ((buff = (*co->begin())->findDefaultAnswerToFilepath("/Users/mchatzip/")) != "")
-			std::cout << buff << std::endl;
-	}
-	
+	CGI cgi;
+	cgi.execCGI("hello.py", gconf);
 	
 	for (std::vector<conf_data*>::iterator ite = co->begin(); ite != co->end(); ++ite)
 		delete *ite;
@@ -567,5 +570,7 @@ int main(int ac, char **av){
 	delete gconf->error_pages;
 	delete gconf->CGI;
 	delete gconf;
+
+
 	return 0;
 }
