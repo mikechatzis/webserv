@@ -19,8 +19,8 @@ CGI::CGI(){
 		_env["HTTP_ACCEPT"] 		= "";
 		_env["HTTP_HOST"] 			= "";
 		_env["HTTP_USER_AGENT"] 	= "";
-		_env["PATH_INFO"] 			= std::string(cwd) + "/cgi-bin/";
-		_env["PATH_TRANSLATED"] 	= "";
+		_env["PATH_INFO"] 			= "";
+		_env["PATH_TRANSLATED"] 	= std::string(cwd) + "/cgi-bin/";
 		_env["QUERY_STRING"] 		= "";
 		_env["REMOTE_ADDR"] 		= "";
 		_env["REMOTE_HOST"] 		= "";
@@ -85,7 +85,7 @@ int CGI::execCGI(std::string const &filePath, t_gconf *gconf){
 	}
 
 	//Open out file
-	int file_fd = open("cgi_out_file", O_CREAT|O_WRONLY|O_APPEND|O_NONBLOCK, 0777);
+	int file_fd = open("cgi_out_file", O_CREAT|O_WRONLY|O_TRUNC|O_NONBLOCK, 0777);
 	if (file_fd == -1)
 		return 1;
 

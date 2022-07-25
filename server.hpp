@@ -329,6 +329,7 @@ class conf_data{
 		size_t port;
 		std::pair<size_t, std::string> redir_url;
 		std::vector<std::string> listing;
+		std::string CGI_extensions;
 		std::string const empty_string;
 		std::string const slash;
 	public:
