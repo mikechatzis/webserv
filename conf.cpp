@@ -568,7 +568,31 @@ int main(int ac, char **av){
 	// 		std::cout << buff << std::endl;
 	// }
 	
-	CGI cgi;
+	std::map<std::string, std::string> env;
+	char cwd[100];
+		getcwd(cwd, 100);
+
+		env["AUTH_TYPE"]           = "";
+		env["CONTENT_LENGTH"]      = "32";
+		env["CONTENT_TYPE"]        = "";
+		env["GATEWAY_INTERFACE"]   = "CGI/1.1";
+		env["HTTP_ACCEPT"]         = "text/xml,application/xml";
+		env["HTTP_HOST"]           = "localhost:8080";
+		env["HTTP_USER_AGENT"]     = "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0";
+		env["PATH_INFO"]           = "/cgi-bin/";
+		env["PATH_TRANSLATED"]     = std::string(cwd) + "/cgi-bin/";
+		env["QUERY_STRING"]        = "first_name=1&last_name=2";
+		env["REMOTE_ADDR"]         = "";
+		env["REMOTE_HOST"]         = "";
+		env["REMOTE_USER"]         = "";
+		env["REQUEST_METHOD"]      = "GET";
+		env["SCRIPT_NAME"]         = "";
+		env["SERVER_NAME"]         = "localhost";
+		env["SERVER_PORT"]         = "8080";
+		env["SERVER_PROTOCOL"]     = "HTTP/1.1";
+		env["SERVER_SOFTWARE"]     = "webserv";
+
+	CGI cgi(env);
 	cgi.execCGI("hello.py", gconf);
 	
 	for (std::vector<conf_data*>::iterator ite = co->begin(); ite != co->end(); ++ite)

@@ -6,33 +6,7 @@ inline bool file_exists (const std::string& name) {
   return (stat (name.c_str(), &buffer) == 0); 
 }
 
-CGI::CGI(){
-	//Set CGI ENV
-	{
-		char cwd[100];
-		getcwd(cwd, 100);
-
-		_env["AUTH_TYPE"]			= "";
-		_env["CONTENT_LENGTH"]		= "-1";
-		_env["CONTENT_TYPE"]		= "";
-		_env["GATEWAY_INTERFACE"]	= "CGI/1.1";
-		_env["HTTP_ACCEPT"] 		= "";
-		_env["HTTP_HOST"] 			= "";
-		_env["HTTP_USER_AGENT"] 	= "";
-		_env["PATH_INFO"] 			= "";
-		_env["PATH_TRANSLATED"] 	= std::string(cwd) + "/cgi-bin/";
-		_env["QUERY_STRING"] 		= "";
-		_env["REMOTE_ADDR"] 		= "";
-		_env["REMOTE_HOST"] 		= "";
-		_env["REMOTE_USER"] 		= "";
-		_env["REQUEST_METHOD"] 		= "";
-		_env["SCRIPT_NAME"] 		= "";
-		_env["SERVER_NAME"] 		= "";
-		_env["SERVER_PORT"] 		= "";
-		_env["SERVER_PROTOCOL"] 	= "";
-		_env["SERVER_SOFTWARE"] 	= "";
-	}
-}
+CGI::CGI(std::map<std::string, std::string> const &env) : _env(env) {}
 
 CGI::~CGI()
 {
@@ -59,12 +33,12 @@ int CGI::execCGI(std::string const &filePath, t_gconf *gconf){
 		<< " not specified. Path set to default" << reset << std::endl;
 	}
 	else{
-		_env["PATH_INFO"] = (*gconf->CGI)[exts[i]];
+		_env["PATH_TRANSLATED"] = (*gconf->CGI)[exts[i]];
 	}
 	
 
 	if (!file_exists(filePath)){
-		path_to_use = _env["PATH_INFO"] + filePath;
+		path_to_use = _env["PATH_TRANSLATED"] + filePath;
 		if (!file_exists(path_to_use)){  std::cerr  << f_red << filePath << ": file not found" << reset << std::endl; return 1; }
 	}
 
@@ -84,6 +58,7 @@ int CGI::execCGI(std::string const &filePath, t_gconf *gconf){
 		}
 	}
 
+
 	//Open out file
 	int file_fd = open("cgi_out_file", O_CREAT|O_WRONLY|O_TRUNC|O_NONBLOCK, 0777);
 	if (file_fd == -1)
@@ -98,7 +73,7 @@ int CGI::execCGI(std::string const &filePath, t_gconf *gconf){
 	if (!pid){
 		if (dup2(file_fd, 1) == -1)
 			return 1;
-		if (execve(path_to_use.c_str(), NULL, NULL) == -1)
+		if (execve(path_to_use.c_str(), NULL, env) == -1)
 			return 1;
 	}
 	else{
